@@ -6,13 +6,14 @@
     <title>SIGA-Iris | Universidade Iris</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Imagem da sala de aula como Fundo da Tela */
+        /* Fundo com a foto da sala aplicado no ecrã inteiro */
         .bg-login-custom {
             background-image: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('https://siga-iris-backend.onrender.com/static/fundo.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
+            background-color: #0f172a;
         }
     </style>
 </head>
@@ -22,8 +23,13 @@
     <div id="tela-login" class="flex-1 flex flex-col items-center justify-center p-4 bg-login-custom">
         <div class="bg-white/95 backdrop-blur-md p-8 rounded-xl shadow-2xl w-full max-w-md border border-white/20 flex flex-col items-center">
             
-            <!-- LOGÓTIPO REAL -->
-            <img src="https://siga-iris-backend.onrender.com/static/logo.png" alt="Logo SIGA-Iris" class="h-20 w-auto mb-3 object-contain" onerror="this.style.display='none'">
+            <!-- LOGÓTIPO -->
+            <div class="mb-3 flex items-center justify-center">
+                <img src="https://siga-iris-backend.onrender.com/static/logo.png" 
+                     alt="Logo SIGA-Iris" 
+                     class="h-16 w-auto object-contain max-w-[200px]" 
+                     onerror="this.onerror=null; this.src='https://img.icons8.com/color/96/graduation-cap.png';">
+            </div>
 
             <h2 class="text-2xl font-bold text-gray-800 text-center mb-1">SIGA-Iris</h2>
             <p class="text-xs text-gray-500 mb-6 text-center">Sistema Integrado de Gestão Académica</p>
@@ -47,7 +53,10 @@
     <div id="painel-principal" class="hidden flex-1 flex flex-col bg-gray-100">
         <header class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
             <div class="flex items-center space-x-3">
-                <img src="https://siga-iris-backend.onrender.com/static/logo.png" alt="Logo" class="h-8 w-auto object-contain bg-white rounded p-1" onerror="this.style.display='none'">
+                <img src="https://siga-iris-backend.onrender.com/static/logo.png" 
+                     alt="Logo" 
+                     class="h-8 w-auto object-contain bg-white rounded p-1" 
+                     onerror="this.onerror=null; this.src='https://img.icons8.com/color/48/graduation-cap.png';">
                 <div>
                     <h1 class="text-xl font-bold">SIGA-Iris</h1>
                     <p id="info-usuario" class="text-xs text-blue-200"></p>
@@ -161,7 +170,6 @@
                 </div>
 
                 <div id="grade-licenciatura" class="space-y-6 hidden">
-                    <!-- CARTÃO INFO DO CURSO -->
                     <div class="bg-blue-900 text-white p-5 rounded-lg shadow-sm flex justify-between items-center">
                         <div>
                             <span class="text-xs uppercase font-semibold text-blue-200">Curso Inscrito</span>
@@ -170,7 +178,6 @@
                         <span class="bg-blue-800 text-blue-100 text-xs px-3 py-1 rounded-full font-semibold border border-blue-700">Licenciatura</span>
                     </div>
 
-                    <!-- 1º SEMESTRE -->
                     <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                         <h3 class="text-lg font-bold mb-4 text-blue-900 border-b pb-2">1º Semestre</h3>
                         <div class="overflow-x-auto">
@@ -190,7 +197,6 @@
                         </div>
                     </div>
 
-                    <!-- 2º SEMESTRE -->
                     <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                         <h3 class="text-lg font-bold mb-4 text-blue-900 border-b pb-2">2º Semestre</h3>
                         <div class="overflow-x-auto">
@@ -215,7 +221,7 @@
         </main>
     </div>
 
-    <!-- MODAL DE EDIÇÃO ADMIN -->
+    <!-- MODAL EDITAR -->
     <div id="modal-editar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
         <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4">
             <h3 class="text-lg font-bold text-gray-800">Editar Usuário</h3>
@@ -262,9 +268,7 @@
                 const data = isJson ? await res.json() : null;
 
                 if (!res.ok) {
-                    const msg = (data && data.detail) 
-                        ? data.detail 
-                        : "Erro interno no servidor (500). Verifique o terminal do backend.";
+                    const msg = (data && data.detail) ? data.detail : "Erro ao efetuar login.";
                     throw new Error(msg);
                 }
 
