@@ -6,9 +6,8 @@
     <title>SIGA-Iris | Universidade Iris</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Imagem de fundo apontando para a pasta static */
         .bg-login-custom {
-            background-image: url('/static/logo.png');
+            background-color: #1e293b;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -20,10 +19,7 @@
 
     <!-- LOGIN -->
     <div id="tela-login" class="flex-1 flex flex-col items-center justify-center p-4 bg-login-custom">
-        <div class="bg-white/90 backdrop-blur-md p-8 rounded-xl shadow-2xl w-full max-w-md border border-white/20 flex flex-col items-center">
-            
-            <!-- Logo pequeno acima do formulário -->
-            <img src="/static/logo_universidade.png" alt="Logo Universidade Iris" class="h-16 w-auto mb-4 object-contain">
+        <div class="bg-white/95 backdrop-blur-md p-8 rounded-xl shadow-2xl w-full max-w-md border border-white/20 flex flex-col items-center">
             
             <h2 class="text-2xl font-bold text-gray-800 text-center mb-1">SIGA-Iris</h2>
             <p class="text-xs text-gray-500 mb-6 text-center">Sistema Integrado de Gestão Académica</p>
@@ -233,7 +229,7 @@
     </div>
 
     <script>
-        const API_URL = window.location.origin;
+        const API_URL = "https://siga-iris-backend.onrender.com";
 
         const DISCIPLINAS_SEMESTRES = {
             1: ["Introdução à Programação", "Álgebra Linear", "Cálculo I", "Arquitetura de Computadores", "Sistemas Operativos", "Física Geral"],
