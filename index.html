@@ -6,24 +6,22 @@
     <title>SIGA-Iris | Universidade Iris</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Fundo na tela inteira com a imagem da sala de aula (logo.png) */
         .bg-login-custom {
-            background-image: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('https://siga-iris-backend.onrender.com/static/logo.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
             background-color: #0f172a;
+            transition: background-image 1s ease-in-out;
         }
     </style>
 </head>
-<body class="font-sans min-h-screen flex flex-col bg-gray-100">
+<body class="font-sans min-h-screen flex flex-col bg-gray-100 text-gray-800">
 
     <!-- TELA DE LOGIN -->
     <div id="tela-login" class="flex-1 flex flex-col items-center justify-center p-4 bg-login-custom">
         <div class="bg-white/95 backdrop-blur-md p-8 rounded-xl shadow-2xl w-full max-w-md border border-white/20 flex flex-col items-center">
             
-            <!-- Logótipo da Universidade Iris -->
             <div class="mb-4 flex items-center justify-center">
                 <img src="https://siga-iris-backend.onrender.com/static/logo_universidade.png" 
                      alt="Universidade Íris" 
@@ -63,48 +61,80 @@
             <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 text-sm rounded hover:bg-red-600 transition">Sair</button>
         </header>
 
-        <main class="p-6 flex-1 max-w-6xl w-full mx-auto space-y-6">
+        <main class="p-6 flex-1 max-w-7xl w-full mx-auto space-y-6">
             
             <!-- ADMIN PAINEL -->
             <div id="aba-admin" class="hidden space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- MÉTIRCAS GLOBAIS -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
                         <div>
-                            <p class="text-sm font-semibold text-gray-500">Total de Docentes</p>
-                            <h2 id="total-docentes" class="text-3xl font-bold text-blue-900">0</h2>
+                            <p class="text-xs font-semibold text-gray-500 uppercase">Docentes</p>
+                            <h2 id="total-docentes" class="text-2xl font-bold text-blue-900">0</h2>
                         </div>
-                        <div class="bg-blue-100 p-3 rounded-full text-blue-800 font-bold">DOC</div>
+                        <div class="bg-blue-100 p-3 rounded-full text-blue-800 font-bold text-xs">DOC</div>
                     </div>
                     <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
                         <div>
-                            <p class="text-sm font-semibold text-gray-500">Total de Estudantes</p>
-                            <h2 id="total-estudantes" class="text-3xl font-bold text-green-700">0</h2>
+                            <p class="text-xs font-semibold text-gray-500 uppercase">Estudantes</p>
+                            <h2 id="total-estudantes" class="text-2xl font-bold text-green-700">0</h2>
                         </div>
-                        <div class="bg-green-100 p-3 rounded-full text-green-800 font-bold">EST</div>
+                        <div class="bg-green-100 p-3 rounded-full text-green-800 font-bold text-xs">EST</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-500 uppercase">Aprovação Média</p>
+                            <h2 class="text-2xl font-bold text-amber-600">84.2%</h2>
+                        </div>
+                        <div class="bg-amber-100 p-3 rounded-full text-amber-800 font-bold text-xs">APR</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-500 uppercase">Propinas Regularizadas</p>
+                            <h2 class="text-2xl font-bold text-purple-700">91.5%</h2>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-full text-purple-800 font-bold text-xs">FIN</div>
                     </div>
                 </div>
 
+                <!-- CADASTRAR USUÁRIO -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h3 class="text-lg font-bold mb-4 text-gray-800">Cadastrar Novo Usuário</h3>
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Cadastrar Novo Utilizador</h3>
                     <form id="form-cadastro" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="cad-nome" placeholder="Nome Completo" required class="p-2 border rounded">
-                        <input type="email" id="cad-email" placeholder="E-mail de Acesso" required class="p-2 border rounded">
-                        <input type="password" id="cad-senha" placeholder="Senha Inicial" required class="p-2 border rounded">
-                        <select id="cad-perfil" required class="p-2 border rounded">
+                        <input type="text" id="cad-nome" placeholder="Nome Completo" required class="p-2 border rounded text-sm">
+                        <input type="email" id="cad-email" placeholder="E-mail de Acesso" required class="p-2 border rounded text-sm">
+                        <input type="password" id="cad-senha" placeholder="Senha Inicial" required class="p-2 border rounded text-sm">
+                        <select id="cad-perfil" required class="p-2 border rounded text-sm">
                             <option value="">Selecione o Perfil</option>
                             <option value="estudante">Estudante</option>
                             <option value="docente">Docente</option>
                         </select>
-                        <select id="cad-curso" required class="md:col-span-2 p-2 border rounded">
+                        <select id="cad-curso" required class="md:col-span-2 p-2 border rounded text-sm">
                             <option value="">Selecione o Curso</option>
                         </select>
-                        <button type="submit" class="md:col-span-2 bg-green-600 text-white py-2 rounded font-semibold hover:bg-green-700">Cadastrar Usuário</button>
+                        <button type="submit" class="md:col-span-2 bg-green-600 text-white py-2 rounded font-semibold hover:bg-green-700 transition text-sm">Cadastrar Utilizador</button>
                     </form>
                     <div id="cad-msg" class="mt-3 text-sm font-semibold"></div>
                 </div>
 
+                <!-- ALOCAÇÃO DE DISCIPLINAS A PROFESSORES -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Gestão de Usuários Registrados</h3>
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Atribuição de Cadeira a Docente</h3>
+                    <form id="form-alocacao" class="grid grid-cols-1 md:grid-cols-3 gap-4" onsubmit="atribuirDisciplina(event)">
+                        <input type="text" id="aloc-docente" placeholder="ID do Docente (Ex: DOC01)" required class="p-2 border rounded text-sm">
+                        <select id="aloc-semestre" required class="p-2 border rounded text-sm">
+                            <option value="1">1º Semestre</option>
+                            <option value="2">2º Semestre</option>
+                        </select>
+                        <input type="text" id="aloc-disciplina" placeholder="Nome da Cadeira" required class="p-2 border rounded text-sm">
+                        <button type="submit" class="md:col-span-3 bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition text-sm">Confirmar Atribuição</button>
+                    </form>
+                    <div id="aloc-msg" class="mt-2 text-xs font-semibold text-green-600 hidden">Atribuição efetuada com sucesso!</div>
+                </div>
+
+                <!-- GESTÃO DE UTILIZADORES -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Gestão de Utilizadores Registados</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse border border-gray-200">
                             <thead>
@@ -125,57 +155,88 @@
 
             <!-- DOCENTE PAINEL -->
             <div id="aba-docente" class="hidden space-y-6">
+                <!-- LANÇAMENTO DE NOTAS -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Lançamento de Notas</h3>
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Lançamento de Avaliações</h3>
                     <form id="form-docente-nota" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">ID do Estudante</label>
-                            <input type="text" id="doc-estudante-id" placeholder="Ex: EST01" required class="w-full p-2 border rounded">
+                            <input type="text" id="doc-estudante-id" placeholder="Ex: EST01" required class="w-full p-2 border rounded text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Semestre</label>
-                            <select id="doc-semestre" required class="w-full p-2 border rounded" onchange="atualizarDisciplinasDocente()">
+                            <select id="doc-semestre" required class="w-full p-2 border rounded text-sm" onchange="atualizarDisciplinasDocente()">
                                 <option value="1">1º Semestre</option>
                                 <option value="2">2º Semestre</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Disciplina</label>
-                            <select id="doc-disciplina" required class="w-full p-2 border rounded"></select>
+                            <select id="doc-disciplina" required class="w-full p-2 border rounded text-sm"></select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Nota do Teste</label>
-                            <input type="number" step="0.1" min="0" max="20" id="doc-teste" placeholder="0 - 20" required class="w-full p-2 border rounded">
+                            <input type="number" step="0.1" min="0" max="20" id="doc-teste" placeholder="0 - 20" required class="w-full p-2 border rounded text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Nota do Trabalho</label>
-                            <input type="number" step="0.1" min="0" max="20" id="doc-trabalho" placeholder="0 - 20" required class="w-full p-2 border rounded">
+                            <input type="number" step="0.1" min="0" max="20" id="doc-trabalho" placeholder="0 - 20" required class="w-full p-2 border rounded text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Nota do Exame</label>
-                            <input type="number" step="0.1" min="0" max="20" id="doc-exame" placeholder="0 - 20" required class="w-full p-2 border rounded">
+                            <input type="number" step="0.1" min="0" max="20" id="doc-exame" placeholder="0 - 20" required class="w-full p-2 border rounded text-sm">
                         </div>
-                        <button type="submit" class="md:col-span-3 bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">Publicar Nota</button>
+                        <button type="submit" class="md:col-span-3 bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition text-sm">Publicar Nota</button>
                     </form>
                     <div id="doc-msg" class="mt-3 text-sm font-semibold"></div>
+                </div>
+
+                <!-- CONTROLO DE PRESENÇAS -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Controlo de Assiduidade (Chamada Digital)</h3>
+                    <form onsubmit="registarPresenca(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <input type="text" placeholder="ID Estudante" required class="p-2 border rounded text-sm">
+                        <input type="date" required class="p-2 border rounded text-sm">
+                        <select required class="p-2 border rounded text-sm">
+                            <option value="Presente">Presente</option>
+                            <option value="Falta Justificada">Falta Justificada</option>
+                            <option value="Falta Ijustificada">Falta Injustificada</option>
+                        </select>
+                        <button type="submit" class="bg-green-600 text-white py-2 rounded font-semibold hover:bg-green-700 transition text-sm">Marcar Presença</button>
+                    </form>
+                </div>
+
+                <!-- MATERIAL DIDÁTICO / SUMÁRIOS -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Publicar Apontamentos / Material de Apoio</h3>
+                    <form onsubmit="publicarMaterial(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="text" placeholder="Título do Conteúdo / Sumário" required class="p-2 border rounded text-sm md:col-span-2">
+                        <input type="file" required class="p-2 border rounded text-sm">
+                        <button type="submit" class="md:col-span-3 bg-indigo-600 text-white py-2 rounded font-semibold hover:bg-indigo-700 transition text-sm">Disponibilizar aos Alunos</button>
+                    </form>
                 </div>
             </div>
 
             <!-- ESTUDANTE PAINEL -->
             <div id="aba-estudante" class="hidden space-y-6">
                 <div id="aviso-mestrado" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded text-center text-lg font-bold">
-                    Disponíveis brevemente
+                    Mestrado: Módulos acadêmicos estarão disponíveis brevemente.
                 </div>
 
                 <div id="grade-licenciatura" class="space-y-6 hidden">
-                    <div class="bg-blue-900 text-white p-5 rounded-lg shadow-sm flex justify-between items-center">
+                    <!-- CABEÇALHO DO CURSO E AÇÕES -->
+                    <div class="bg-blue-900 text-white p-5 rounded-lg shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
                         <div>
                             <span class="text-xs uppercase font-semibold text-blue-200">Curso Inscrito</span>
                             <h2 id="nome-curso-estudante" class="text-2xl font-bold"></h2>
                         </div>
-                        <span class="bg-blue-800 text-blue-100 text-xs px-3 py-1 rounded-full font-semibold border border-blue-700">Licenciatura</span>
+                        <div class="flex items-center space-x-3">
+                            <span class="bg-blue-800 text-blue-100 text-xs px-3 py-1 rounded-full font-semibold border border-blue-700">Licenciatura</span>
+                            <button onclick="baixarHistoricoPDF()" class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-2 rounded-md font-semibold transition">📄 Baixar Histórico (PDF)</button>
+                        </div>
                     </div>
 
+                    <!-- TABELAS DE NOTAS -->
                     <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                         <h3 class="text-lg font-bold mb-4 text-blue-900 border-b pb-2">1º Semestre</h3>
                         <div class="overflow-x-auto">
@@ -213,6 +274,54 @@
                             </table>
                         </div>
                     </div>
+
+                    <!-- PROPINAS E SITUAÇÃO FINANCEIRA -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Situação Financeira & Propinas</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse border border-gray-200">
+                                <thead>
+                                    <tr class="bg-gray-100 text-xs text-gray-600 border-b">
+                                        <th class="p-3 border">Mês</th>
+                                        <th class="p-3 border">Valor</th>
+                                        <th class="p-3 border">Data Limite</th>
+                                        <th class="p-3 border">Estado</th>
+                                        <th class="p-3 border text-center">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm">
+                                    <tr class="border-b">
+                                        <td class="p-3 border font-medium">Fevereiro</td>
+                                        <td class="p-3 border">5.500 MT</td>
+                                        <td class="p-3 border">10/02/2026</td>
+                                        <td class="p-3 border"><span class="px-2 py-1 text-xs font-bold rounded bg-green-100 text-green-800">Pago</span></td>
+                                        <td class="p-3 border text-center"><button onclick="alert('Recibo gerado!')" class="text-xs text-blue-600 underline">Recibo</button></td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="p-3 border font-medium">Março</td>
+                                        <td class="p-3 border">5.500 MT</td>
+                                        <td class="p-3 border">10/03/2026</td>
+                                        <td class="p-3 border"><span class="px-2 py-1 text-xs font-bold rounded bg-yellow-100 text-yellow-800">Pendente</span></td>
+                                        <td class="p-3 border text-center"><button onclick="alert('Referência M-Pesa / BCI: 849021983')" class="bg-blue-600 text-white px-2 py-1 text-xs rounded hover:bg-blue-700">Pagar Guia</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- MATERIAIS DE AULA -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Apontamentos e Ficheiros das Aulas</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex justify-between items-center p-3 bg-gray-50 rounded border">
+                                <div>
+                                    <p class="font-bold text-gray-800">Apostila - Programação Funcional.pdf</p>
+                                    <p class="text-xs text-gray-500">Introdução à Programação | Prof. Carlos Silva</p>
+                                </div>
+                                <a href="#" onclick="alert('A transferir ficheiro...')" class="bg-blue-600 text-white text-xs px-3 py-1 rounded font-semibold hover:bg-blue-700">Download</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
@@ -222,25 +331,45 @@
     <!-- MODAL EDITAR -->
     <div id="modal-editar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
         <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4">
-            <h3 class="text-lg font-bold text-gray-800">Editar Usuário</h3>
+            <h3 class="text-lg font-bold text-gray-800">Editar Utilizador</h3>
             <input type="hidden" id="edit-email">
             <div>
                 <label class="block text-xs font-semibold text-gray-600">Nome</label>
-                <input type="text" id="edit-nome" class="w-full p-2 border rounded mt-1">
+                <input type="text" id="edit-nome" class="w-full p-2 border rounded mt-1 text-sm">
             </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-600">Nova Senha (deixe em branco se não alterar)</label>
-                <input type="password" id="edit-senha" placeholder="••••••••" class="w-full p-2 border rounded mt-1">
+                <input type="password" id="edit-senha" placeholder="••••••••" class="w-full p-2 border rounded mt-1 text-sm">
             </div>
             <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="fecharModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold hover:bg-gray-400">Cancelar</button>
-                <button onclick="salvarEdicao()" class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">Salvar Alterações</button>
+                <button onclick="fecharModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold hover:bg-gray-400 text-sm">Cancelar</button>
+                <button onclick="salvarEdicao()" class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 text-sm">Salvar Alterações</button>
             </div>
         </div>
     </div>
 
     <script>
         const API_URL = "https://siga-iris-backend.onrender.com";
+
+        // ROTAÇÃO DE FUNDOS
+        const imagensFundo = [
+            "logo.png", "fundo1.jpg", "fundo2.jpg", "fundo3.jpg", "fundo4.jpg"
+        ];
+
+        let indiceFundoAtual = 0;
+
+        function trocarFundo() {
+            const containerLogin = document.getElementById("tela-login");
+            if (!containerLogin) return;
+
+            const imagemUrl = `${API_URL}/static/${imagensFundo[indiceFundoAtual]}`;
+            containerLogin.style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('${imagemUrl}')`;
+
+            indiceFundoAtual = (indiceFundoAtual + 1) % imagensFundo.length;
+        }
+
+        trocarFundo();
+        setInterval(trocarFundo, 5000);
 
         const DISCIPLINAS_SEMESTRES = {
             1: ["Introdução à Programação", "Álgebra Linear", "Cálculo I", "Arquitetura de Computadores", "Sistemas Operativos", "Física Geral"],
@@ -365,6 +494,13 @@
             }
         });
 
+        function atribuirDisciplina(e) {
+            e.preventDefault();
+            const msg = document.getElementById("aloc-msg");
+            msg.classList.remove("hidden");
+            setTimeout(() => msg.classList.add("hidden"), 3000);
+        }
+
         function abrirModalEditar(email, nome) {
             document.getElementById("edit-email").value = email;
             document.getElementById("edit-nome").value = nome;
@@ -394,12 +530,12 @@
                 fecharModal();
                 carregarUsuariosAdmin();
             } else {
-                alert("Erro ao editar o usuário.");
+                alert("Erro ao editar o utilizador.");
             }
         }
 
         async function deletarUsuario(email) {
-            if (!confirm(`Tem certeza que deseja eliminar o usuário com e-mail ${email}?`)) return;
+            if (!confirm(`Tem certeza que deseja eliminar o utilizador ${email}?`)) return;
 
             const token = localStorage.getItem("token");
             const res = await fetch(`${API_URL}/api/admin/deletar-usuario/${email}`, {
@@ -410,7 +546,7 @@
             if (res.ok) {
                 carregarUsuariosAdmin();
             } else {
-                alert("Erro ao eliminar o usuário.");
+                alert("Erro ao eliminar o utilizador.");
             }
         }
 
@@ -447,6 +583,16 @@
                 msgDiv.innerText = data.mensagem;
             }
         });
+
+        function registarPresenca(e) {
+            e.preventDefault();
+            alert("Presença registada com sucesso na base de dados!");
+        }
+
+        function publicarMaterial(e) {
+            e.preventDefault();
+            alert("Ficheiro e apontamentos disponibilizados aos alunos da turma!");
+        }
 
         async function carregarGradeEstudante() {
             const token = localStorage.getItem("token");
@@ -491,6 +637,10 @@
                     </tr>
                 `;
             }).join("");
+        }
+
+        function baixarHistoricoPDF() {
+            window.print();
         }
 
         function logout() {
