@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SIGA-Iris - Sistema Integrado de Gestão Académica da Universidade Iris. Portal do Estudante, Docente e Administração.">
+    <meta name="keywords" content="SIGA-Iris, Universidade Iris, Gestão Académica, Portal do Estudante">
+    <meta name="robots" content="index, follow">
     <title>SIGA-Iris | Universidade Iris</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -65,7 +68,7 @@
             
             <!-- ADMIN PAINEL -->
             <div id="aba-admin" class="hidden space-y-6">
-                <!-- MÉTIRCAS GLOBAIS -->
+                <!-- MÉTRICAS GLOBAIS -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
                         <div>
@@ -351,9 +354,21 @@
     <script>
         const API_URL = "https://siga-iris-backend.onrender.com";
 
-        // ROTAÇÃO DE FUNDOS
-        const imagensFundo = [
-            "logo.png", "fundo1.jpg", "fundo2.jpg", "fundo3.jpg", "fundo4.jpg"
+        // LISTA DE FOTOS EXCLUSIVAS PARA O BACKGROUND DA TELA DE LOGIN
+        const imagensBackground = [
+            "logo.png",
+            "logo1.png",
+            "logo2.png",
+            "logo3.png",
+            "logo4.png",
+            "logo5.png",
+            "logo6.png",
+            "logo7.png",
+            "logo8.png",
+            "logo9.png",
+            "logo10.png",
+            "logo11.png",
+            "logo12.png"
         ];
 
         let indiceFundoAtual = 0;
@@ -362,10 +377,14 @@
             const containerLogin = document.getElementById("tela-login");
             if (!containerLogin) return;
 
-            const imagemUrl = `${API_URL}/static/${imagensFundo[indiceFundoAtual]}`;
+            const imagemUrl = `${API_URL}/static/${imagensBackground[indiceFundoAtual]}`;
             containerLogin.style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('${imagemUrl}')`;
 
-            indiceFundoAtual = (indiceFundoAtual + 1) % imagensFundo.length;
+            const proximoIndice = (indiceFundoAtual + 1) % imagensBackground.length;
+            const imgPrecarregar = new Image();
+            imgPrecarregar.src = `${API_URL}/static/${imagensBackground[proximoIndice]}`;
+
+            indiceFundoAtual = proximoIndice;
         }
 
         trocarFundo();
