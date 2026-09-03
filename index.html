@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGA-Iris | Universidade Iris</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Imagem de fundo apontando para a pasta static */
+        .bg-login-custom {
+            background-image: url('/static/logo.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col bg-gray-100">
+
+    <!-- LOGIN -->
+    <div id="tela-login" class="flex-1 flex flex-col items-center justify-center p-4 bg-login-custom">
+        <div class="bg-white/90 backdrop-blur-md p-8 rounded-xl shadow-2xl w-full max-w-md border border-white/20 flex flex-col items-center">
+            
+            <!-- Logo pequeno acima do formulário -->
+            <img src="/static/logo_universidade.png" alt="Logo Universidade Iris" class="h-16 w-auto mb-4 object-contain">
+            
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-1">SIGA-Iris</h2>
+            <p class="text-xs text-gray-500 mb-6 text-center">Sistema Integrado de Gestão Académica</p>
+
+            <form id="form-login" class="space-y-4 w-full">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">E-mail</label>
+                    <input type="email" id="email" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 bg-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Senha</label>
+                    <input type="password" id="senha" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 bg-white">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 font-semibold transition">Entrar</button>
+            </form>
+            <div id="login-erro" class="mt-4 text-red-500 text-sm text-center hidden"></div>
+        </div>
+    </div>
+
+    <!-- PAINEL PRINCIPAL -->
+    <div id="painel-principal" class="hidden flex-1 flex flex-col bg-gray-100">
+        <header class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
+            <div>
+                <h1 class="text-xl font-bold">SIGA-Iris</h1>
+                <p id="info-usuario" class="text-xs text-blue-200"></p>
+            </div>
+            <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 text-sm rounded hover:bg-red-600 transition">Sair</button>
+        </header>
+
+        <main class="p-6 flex-1 max-w-6xl w-full mx-auto space-y-6">
+            
+            <!-- ADMIN PAINEL -->
+            <div id="aba-admin" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500">Total de Docentes</p>
+                            <h2 id="total-docentes" class="text-3xl font-bold text-blue-900">0</h2>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full text-blue-800 font-bold">DOC</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500">Total de Estudantes</p>
+                            <h2 id="total-estudantes" class="text-3xl font-bold text-green-700">0</h2>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full text-green-800 font-bold">EST</div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4 text-gray-800">Cadastrar Novo Usuário</h3>
+                    <form id="form-cadastro" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="cad-nome" placeholder="Nome Completo" required class="p-2 border rounded">
+                        <input type="email" id="cad-email" placeholder="E-mail de Acesso" required class="p-2 border rounded">
+                        <input type="password" id="cad-senha" placeholder="Senha Inicial" required class="p-2 border rounded">
+                        <select id="cad-perfil" required class="p-2 border rounded">
+                            <option value="">Selecione o Perfil</option>
+                            <option value="estudante">Estudante</option>
+                            <option value="docente">Docente</option>
+                        </select>
+                        <select id="cad-curso" required class="md:col-span-2 p-2 border rounded">
+                            <option value="">Selecione o Curso</option>
+                        </select>
+                        <button type="submit" class="md:col-span-2 bg-green-600 text-white py-2 rounded font-semibold hover:bg-green-700">Cadastrar Usuário</button>
+                    </form>
+                    <div id="cad-msg" class="mt-3 text-sm font-semibold"></div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Gestão de Usuários Registrados</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse border border-gray-200">
+                            <thead>
+                                <tr class="bg-gray-100 text-xs text-gray-600 border-b">
+                                    <th class="p-3 border">ID</th>
+                                    <th class="p-3 border">Nome</th>
+                                    <th class="p-3 border">E-mail</th>
+                                    <th class="p-3 border">Perfil</th>
+                                    <th class="p-3 border">Curso</th>
+                                    <th class="p-3 border text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-usuarios" class="text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DOCENTE PAINEL -->
+            <div id="aba-docente" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Lançamento de Notas</h3>
+                    <form id="form-docente-nota" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">ID do Estudante</label>
+                            <input type="text" id="doc-estudante-id" placeholder="Ex: EST01" required class="w-full p-2 border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Semestre</label>
+                            <select id="doc-semestre" required class="w-full p-2 border rounded" onchange="atualizarDisciplinasDocente()">
+                                <option value="1">1º Semestre</option>
+                                <option value="2">2º Semestre</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Disciplina</label>
+                            <select id="doc-disciplina" required class="w-full p-2 border rounded"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Nota do Teste</label>
+                            <input type="number" step="0.1" min="0" max="20" id="doc-teste" placeholder="0 - 20" required class="w-full p-2 border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Nota do Trabalho</label>
+                            <input type="number" step="0.1" min="0" max="20" id="doc-trabalho" placeholder="0 - 20" required class="w-full p-2 border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Nota do Exame</label>
+                            <input type="number" step="0.1" min="0" max="20" id="doc-exame" placeholder="0 - 20" required class="w-full p-2 border rounded">
+                        </div>
+                        <button type="submit" class="md:col-span-3 bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">Publicar Nota</button>
+                    </form>
+                    <div id="doc-msg" class="mt-3 text-sm font-semibold"></div>
+                </div>
+            </div>
+
+            <!-- ESTUDANTE PAINEL -->
+            <div id="aba-estudante" class="hidden space-y-6">
+                <div id="aviso-mestrado" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded text-center text-lg font-bold">
+                    Disponíveis brevemente
+                </div>
+
+                <div id="grade-licenciatura" class="space-y-6 hidden">
+                    <!-- CARTÃO INFO DO CURSO -->
+                    <div class="bg-blue-900 text-white p-5 rounded-lg shadow-sm flex justify-between items-center">
+                        <div>
+                            <span class="text-xs uppercase font-semibold text-blue-200">Curso Inscrito</span>
+                            <h2 id="nome-curso-estudante" class="text-2xl font-bold"></h2>
+                        </div>
+                        <span class="bg-blue-800 text-blue-100 text-xs px-3 py-1 rounded-full font-semibold border border-blue-700">Licenciatura</span>
+                    </div>
+
+                    <!-- 1º SEMESTRE -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold mb-4 text-blue-900 border-b pb-2">1º Semestre</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse border border-gray-200">
+                                <thead>
+                                    <tr class="bg-gray-100 text-xs text-gray-600 border-b">
+                                        <th class="p-3 border">Disciplina</th>
+                                        <th class="p-3 border">Teste</th>
+                                        <th class="p-3 border">Trabalho</th>
+                                        <th class="p-3 border">Exame</th>
+                                        <th class="p-3 border">Média Final</th>
+                                        <th class="p-3 border text-center">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-semestre-1" class="text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 2º SEMESTRE -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold mb-4 text-blue-900 border-b pb-2">2º Semestre</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse border border-gray-200">
+                                <thead>
+                                    <tr class="bg-gray-100 text-xs text-gray-600 border-b">
+                                        <th class="p-3 border">Disciplina</th>
+                                        <th class="p-3 border">Teste</th>
+                                        <th class="p-3 border">Trabalho</th>
+                                        <th class="p-3 border">Exame</th>
+                                        <th class="p-3 border">Média Final</th>
+                                        <th class="p-3 border text-center">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-semestre-2" class="text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL DE EDIÇÃO ADMIN -->
+    <div id="modal-editar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold text-gray-800">Editar Usuário</h3>
+            <input type="hidden" id="edit-email">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600">Nome</label>
+                <input type="text" id="edit-nome" class="w-full p-2 border rounded mt-1">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600">Nova Senha (deixe em branco se não alterar)</label>
+                <input type="password" id="edit-senha" placeholder="••••••••" class="w-full p-2 border rounded mt-1">
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="fecharModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold hover:bg-gray-400">Cancelar</button>
+                <button onclick="salvarEdicao()" class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        const DISCIPLINAS_SEMESTRES = {
+            1: ["Introdução à Programação", "Álgebra Linear", "Cálculo I", "Arquitetura de Computadores", "Sistemas Operativos", "Física Geral"],
+            2: ["Algoritmos e Estruturas de Dados", "Bancos de Dados", "Cálculo II", "Redes de Computadores", "Engenharia de Software", "Estatística e Probabilidades"]
+        };
+
+        if (localStorage.getItem("token")) carregarPainel();
+
+        document.getElementById("form-login").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const bodyParams = new URLSearchParams();
+            bodyParams.append("username", document.getElementById("email").value);
+            bodyParams.append("password", document.getElementById("senha").value);
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: bodyParams
+                });
+
+                const isJson = res.headers.get("content-type")?.includes("application/json");
+                const data = isJson ? await res.json() : null;
+
+                if (!res.ok) {
+                    const msg = (data && data.detail) 
+                        ? data.detail 
+                        : "Erro interno no servidor (500). Verifique o terminal do backend.";
+                    throw new Error(msg);
+                }
+
+                localStorage.setItem("token", data.access_token);
+                localStorage.setItem("perfil", data.perfil);
+                localStorage.setItem("nome", data.nome);
+                carregarPainel();
+            } catch (err) {
+                const erroDiv = document.getElementById("login-erro");
+                erroDiv.innerText = err.message;
+                erroDiv.classList.remove("hidden");
+            }
+        });
+
+        async function carregarPainel() {
+            const perfil = localStorage.getItem("perfil");
+            const nome = localStorage.getItem("nome");
+
+            document.getElementById("tela-login").classList.add("hidden");
+            document.getElementById("painel-principal").classList.remove("hidden");
+            document.getElementById("info-usuario").innerText = `${nome} | Perfil: ${perfil.toUpperCase()}`;
+
+            if (perfil === "admin") {
+                document.getElementById("aba-admin").classList.remove("hidden");
+                carregarCursosSelect();
+                carregarUsuariosAdmin();
+            } else if (perfil === "docente") {
+                document.getElementById("aba-docente").classList.remove("hidden");
+                atualizarDisciplinasDocente();
+            } else if (perfil === "estudante") {
+                document.getElementById("aba-estudante").classList.remove("hidden");
+                carregarGradeEstudante();
+            }
+        }
+
+        async function carregarUsuariosAdmin() {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${API_URL}/api/admin/usuarios`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            document.getElementById("total-docentes").innerText = data.totais.docentes;
+            document.getElementById("total-estudantes").innerText = data.totais.estudantes;
+
+            const tbody = document.getElementById("tabela-usuarios");
+            tbody.innerHTML = data.usuarios.map(u => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3 font-semibold text-gray-700">${u.id}</td>
+                    <td class="p-3 font-bold text-gray-900">${u.nome}</td>
+                    <td class="p-3 text-gray-600">${u.email}</td>
+                    <td class="p-3"><span class="px-2 py-1 text-xs font-bold rounded ${u.perfil === 'docente' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">${u.perfil.toUpperCase()}</span></td>
+                    <td class="p-3 text-gray-600">${u.curso}</td>
+                    <td class="p-3 text-center space-x-2">
+                        <button onclick="abrirModalEditar('${u.email}', '${u.nome}')" class="bg-amber-500 text-white px-2 py-1 text-xs rounded hover:bg-amber-600 font-semibold">Editar</button>
+                        <button onclick="deletarUsuario('${u.email}')" class="bg-red-600 text-white px-2 py-1 text-xs rounded hover:bg-red-700 font-semibold">Eliminar</button>
+                    </td>
+                </tr>
+            `).join("");
+        }
+
+        async function carregarCursosSelect() {
+            const res = await fetch(`${API_URL}/api/cursos`);
+            const cursos = await res.json();
+            const select = document.getElementById("cad-curso");
+            select.innerHTML = '<option value="">Selecione o Curso</option>' + 
+                cursos.map(c => `<option value="${c.id}">${c.nome} (${c.tipo})</option>`).join("");
+        }
+
+        document.getElementById("form-cadastro")?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem("token");
+            const payload = {
+                nome: document.getElementById("cad-nome").value,
+                email: document.getElementById("cad-email").value,
+                senha: document.getElementById("cad-senha").value,
+                perfil: document.getElementById("cad-perfil").value,
+                curso_id: parseInt(document.getElementById("cad-curso").value)
+            };
+
+            const res = await fetch(`${API_URL}/api/admin/cadastrar-usuario`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            const msgDiv = document.getElementById("cad-msg");
+            if (!res.ok) {
+                msgDiv.className = "mt-3 text-sm font-semibold text-red-600";
+                msgDiv.innerText = data.detail;
+            } else {
+                msgDiv.className = "mt-3 text-sm font-semibold text-green-600";
+                msgDiv.innerText = data.mensagem;
+                document.getElementById("form-cadastro").reset();
+                carregarUsuariosAdmin();
+            }
+        });
+
+        function abrirModalEditar(email, nome) {
+            document.getElementById("edit-email").value = email;
+            document.getElementById("edit-nome").value = nome;
+            document.getElementById("edit-senha").value = "";
+            document.getElementById("modal-editar").classList.remove("hidden");
+        }
+
+        function fecharModal() {
+            document.getElementById("modal-editar").classList.add("hidden");
+        }
+
+        async function salvarEdicao() {
+            const token = localStorage.getItem("token");
+            const payload = {
+                email: document.getElementById("edit-email").value,
+                nome: document.getElementById("edit-nome").value,
+                nova_senha: document.getElementById("edit-senha").value
+            };
+
+            const res = await fetch(`${API_URL}/api/admin/editar-usuario`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                fecharModal();
+                carregarUsuariosAdmin();
+            } else {
+                alert("Erro ao editar o usuário.");
+            }
+        }
+
+        async function deletarUsuario(email) {
+            if (!confirm(`Tem certeza que deseja eliminar o usuário com e-mail ${email}?`)) return;
+
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${API_URL}/api/admin/deletar-usuario/${email}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                carregarUsuariosAdmin();
+            } else {
+                alert("Erro ao eliminar o usuário.");
+            }
+        }
+
+        function atualizarDisciplinasDocente() {
+            const sem = document.getElementById("doc-semestre").value;
+            const selectDisc = document.getElementById("doc-disciplina");
+            selectDisc.innerHTML = DISCIPLINAS_SEMESTRES[sem].map(d => `<option value="${d}">${d}</option>`).join("");
+        }
+
+        document.getElementById("form-docente-nota")?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem("token");
+            const payload = {
+                estudante_id: document.getElementById("doc-estudante-id").value,
+                semestre: parseInt(document.getElementById("doc-semestre").value),
+                disciplina: document.getElementById("doc-disciplina").value,
+                teste: parseFloat(document.getElementById("doc-teste").value),
+                trabalho: parseFloat(document.getElementById("doc-trabalho").value),
+                exame: parseFloat(document.getElementById("doc-exame").value)
+            };
+
+            const res = await fetch(`${API_URL}/api/docente/publicar-nota`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            const msgDiv = document.getElementById("doc-msg");
+            if (!res.ok) {
+                msgDiv.className = "mt-3 text-sm font-semibold text-red-600";
+                msgDiv.innerText = data.detail;
+            } else {
+                msgDiv.className = "mt-3 text-sm font-semibold text-green-600";
+                msgDiv.innerText = data.mensagem;
+            }
+        });
+
+        async function carregarGradeEstudante() {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${API_URL}/api/estudante/grade-notas`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            if (data.tipo === "Mestrado") {
+                document.getElementById("aviso-mestrado").classList.remove("hidden");
+                document.getElementById("grade-licenciatura").classList.add("hidden");
+            } else {
+                document.getElementById("aviso-mestrado").classList.add("hidden");
+                document.getElementById("grade-licenciatura").classList.remove("hidden");
+                document.getElementById("nome-curso-estudante").innerText = data.curso;
+
+                renderizarTabela(data.grade[1], "tabela-semestre-1");
+                renderizarTabela(data.grade[2], "tabela-semestre-2");
+            }
+        }
+
+        function renderizarTabela(lista, elementId) {
+            const tbody = document.getElementById(elementId);
+            tbody.innerHTML = lista.map(item => {
+                let badgeEstado = '<span class="px-2 py-1 text-xs font-semibold rounded bg-gray-100 text-gray-500">Pendente</span>';
+                if (item.media !== '-') {
+                    if (item.media >= 10) {
+                        badgeEstado = '<span class="px-2 py-1 text-xs font-bold rounded bg-green-100 text-green-800">Aprovado</span>';
+                    } else {
+                        badgeEstado = '<span class="px-2 py-1 text-xs font-bold rounded bg-red-100 text-red-800">Reprovado</span>';
+                    }
+                }
+
+                return `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 font-semibold text-gray-800">${item.disciplina}</td>
+                        <td class="p-3 text-gray-600">${item.teste}</td>
+                        <td class="p-3 text-gray-600">${item.trabalho}</td>
+                        <td class="p-3 text-gray-600">${item.exame}</td>
+                        <td class="p-3 font-bold ${item.media !== '-' && item.media >= 10 ? 'text-green-600' : (item.media !== '-' ? 'text-red-600' : 'text-gray-400')}">${item.media}</td>
+                        <td class="p-3 text-center">${badgeEstado}</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+    </script>
+</body>
+</html>
