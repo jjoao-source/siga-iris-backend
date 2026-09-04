@@ -51,12 +51,38 @@ CURSOS_DB = [
     {"id": 10, "nome": "Mestrado em Direito Empresarial", "tipo": "Mestrado"}
 ]
 
-DISCIPLINAS_LICENCIATURA = {
-    1: ["Introdução à Programação", "Álgebra Linear", "Cálculo I", "Arquitetura de Computadores", "Sistemas Operativos", "Física Geral"],
-    2: ["Algoritmos e Estruturas de Dados", "Bancos de Dados", "Cálculo II", "Redes de Computadores", "Engenharia de Software", "Estatística e Probabilidades"]
+# CORREÇÃO CRÍTICA: Estrutura mapeando [ID_DO_CURSO][SEMESTRE] -> Lista de Cadeiras
+DISCIPLINAS_POR_CURSO = {
+    1: { # Engenharia Informática
+        1: ["Introdução à Programação", "Álgebra Linear", "Cálculo I", "Arquitetura de Computadores", "Física Geral"],
+        2: ["Algoritmos e Estruturas de Dados", "Bancos de Dados", "Cálculo II", "Redes de Computadores", "Engenharia de Software"]
+    },
+    2: { # Gestão de Empresas
+        1: ["Introdução à Gestão", "Contabilidade I", "Microeconomia", "Matemática Aplicada", "Comportamento Organizacional"],
+        2: ["Gestão Financeira", "Contabilidade II", "Macroeconomia", "Estatística Aplicada", "Marketing Geral"]
+    },
+    3: { # Direito
+        1: ["Introdução ao Estudo do Direito", "Direito Constitucional I", "História do Direito", "Teoria Geral do Estado", "Filosofia do Direito"],
+        2: ["Direito Civil I", "Direito Constitucional II", "Direito Internacional Público", "Direito Penal I", "Economia Política"]
+    },
+    4: { # Medicina
+        1: ["Anatomia Humana I", "Histologia e Embriologia", "Biologia Celular", "Bioquímica Médica", "Introdução à Medicina"],
+        2: ["Anatomia Humana II", "Fisiologia Humana I", "Genética Médica", "Microbiologia e Imunologia", "Bioética"]
+    },
+    5: { # Arquitetura
+        1: ["Desenho Técnico", "História da Arquitetura I", "Geometria Descritiva", "Introdução ao Projeto de Arquitetura", "Matemática para Arquitetura"],
+        2: ["Projeto de Arquitetura I", "História da Arquitetura II", "Sistemas Estruturais I", "Tecnologia da Construção I", "Topografia"]
+    },
+    6: { # Psicologia
+        1: ["História da Psicologia", "Processos Psicológicos Básicos", "Anatomia e Fisiologia do SN", "Sociologia Geral", "Epistemologia"],
+        2: ["Psicologia do Desenvolvimento I", "Neuroanatomia", "Teorias da Personalidade", "Metodologia de Investigação", "Psicologia Social"]
+    },
+    7: { # Economia
+        1: ["Introdução à Economia", "Cálculo I", "Contabilidade Geral", "História Económica", "Metodologia de Investigação"],
+        2: ["Microeconomia I", "Macroeconomia I", "Cálculo II", "Estatística I", "Álgebra Linear para Economistas"]
+    }
 }
 
-# ADICIONADO: Campo "propina_em_dia" para controlar o bloqueio financeiro individual
 USUARIOS_DB = {
     "admin@univ.br": {
         "id": "ADM01", "nome": "Diretoria Acadêmica", "email": "admin@univ.br",
@@ -68,7 +94,7 @@ USUARIOS_DB = {
     },
     "aluno@univ.br": {
         "id": "EST01", "nome": "Ana Maria", "email": "aluno@univ.br",
-        "senha_hash": HASH_PADRAO, "perfil": "estudante", "curso_id": 1, "propina_em_dia": False  # Altere para True para liberar as notas
+        "senha_hash": HASH_PADRAO, "perfil": "estudante", "curso_id": 1, "propina_em_dia": True
     }
 }
 
@@ -203,18 +229,19 @@ def deletar_usuario(email: str, usuario_atual: dict = Depends(obter_usuario_atua
     del USUARIOS_DB[email]
     return {"mensagem": "Usuário removido com sucesso!"}
 
-# ROTA ATUALIZADA COM VERIFICAÇÃO DE BLOQUEIO FINANCEIRO
+# ROTA ATUALIZADA COM O BUSCADOR DE DISCIPLINAS POR CURSO
 @app.get("/api/estudante/grade-notas")
 def obter_grade_notas(usuario_atual: dict = Depends(obter_usuario_atual)):
     if usuario_atual["perfil"] != "estudante":
         raise HTTPException(status_code=403, detail="Acesso exclusivo para estudantes.")
     
-    curso = next((c for c in CURSOS_DB if c["id"] == usuario_atual["curso_id"]), None)
+    curso_id = usuario_atual["curso_id"]
+    curso = next((c for c in CURSOS_DB if c["id"] == curso_id), None)
     
     if not curso or curso["tipo"] == "Mestrado":
         return {"tipo": "Mestrado", "mensagem": "Disponíveis brevemente"}
 
-    # VERIFICAÇÃO DE PROPINAS EM ATRASO
+    # Bloqueio Financeiro
     if not usuario_atual.get("propina_em_dia", True):
         return {
             "tipo": "Licenciatura",
@@ -227,8 +254,11 @@ def obter_grade_notas(usuario_atual: dict = Depends(obter_usuario_atual)):
     estudante_id = usuario_atual["id"]
     grade = {1: [], 2: []}
 
+    # Procura as disciplinas específicas do curso do estudante
+    disciplinas_curso = DISCIPLINAS_POR_CURSO.get(curso_id, {1: [], 2: []})
+
     for sem in [1, 2]:
-        for disc in DISCIPLINAS_LICENCIATURA[sem]:
+        for disc in disciplinas_curso.get(sem, []):
             nota = next((n for n in NOTAS_DB if n["estudante_id"] == estudante_id and n["disciplina"] == disc), None)
             grade[sem].append({
                 "disciplina": disc,
