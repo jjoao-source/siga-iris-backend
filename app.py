@@ -51,7 +51,6 @@ CURSOS_DB = [
     {"id": 10, "nome": "Mestrado em Direito Empresarial", "tipo": "Mestrado"}
 ]
 
-# CORREÇÃO CRÍTICA: Estrutura mapeando [ID_DO_CURSO][SEMESTRE] -> Lista de Cadeiras
 DISCIPLINAS_POR_CURSO = {
     1: { # Engenharia Informática
         1: ["Introdução à Programação", "Álgebra Linear", "Cálculo I", "Arquitetura de Computadores", "Física Geral"],
@@ -229,7 +228,20 @@ def deletar_usuario(email: str, usuario_atual: dict = Depends(obter_usuario_atua
     del USUARIOS_DB[email]
     return {"mensagem": "Usuário removido com sucesso!"}
 
-# ROTA ATUALIZADA COM O BUSCADOR DE DISCIPLINAS POR CURSO
+# NOVO ENDPOINT: Devolve as disciplinas do curso do docente logado
+@app.get("/api/docente/disciplinas")
+def obter_disciplinas_docente(usuario_atual: dict = Depends(obter_usuario_atual)):
+    if usuario_atual["perfil"] != "docente":
+        raise HTTPException(status_code=403, detail="Acesso restrito a docentes.")
+    
+    curso_id = usuario_atual.get("curso_id")
+    disciplinas = DISCIPLINAS_POR_CURSO.get(curso_id, {1: [], 2: []})
+    
+    return {
+        "curso_id": curso_id,
+        "disciplinas": disciplinas
+    }
+
 @app.get("/api/estudante/grade-notas")
 def obter_grade_notas(usuario_atual: dict = Depends(obter_usuario_atual)):
     if usuario_atual["perfil"] != "estudante":
@@ -241,7 +253,6 @@ def obter_grade_notas(usuario_atual: dict = Depends(obter_usuario_atual)):
     if not curso or curso["tipo"] == "Mestrado":
         return {"tipo": "Mestrado", "mensagem": "Disponíveis brevemente"}
 
-    # Bloqueio Financeiro
     if not usuario_atual.get("propina_em_dia", True):
         return {
             "tipo": "Licenciatura",
@@ -253,8 +264,6 @@ def obter_grade_notas(usuario_atual: dict = Depends(obter_usuario_atual)):
 
     estudante_id = usuario_atual["id"]
     grade = {1: [], 2: []}
-
-    # Procura as disciplinas específicas do curso do estudante
     disciplinas_curso = DISCIPLINAS_POR_CURSO.get(curso_id, {1: [], 2: []})
 
     for sem in [1, 2]:
