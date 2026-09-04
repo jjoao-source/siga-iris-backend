@@ -323,6 +323,9 @@
     </div>
 
     <script>
+        // ALTERE AQUI O ENDEREÇO DA SUA API PYTHON
+        const API_URL = "http://127.0.0.1:8000"; 
+
         let tokenAtual = localStorage.getItem("token") || "";
         let perfilAtual = localStorage.getItem("perfil") || "";
         let disciplinasDoDocente = {};
@@ -344,7 +347,7 @@
             formData.append("password", senha);
 
             try {
-                const res = await fetch("/api/auth/login", {
+                const res = await fetch(`${API_URL}/api/auth/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     body: formData
@@ -399,7 +402,7 @@
         // --- LÓGICA DO DOCENTE ---
         async function carregarDisciplinasDocente() {
             try {
-                const res = await fetch("/api/docente/disciplinas", {
+                const res = await fetch(`${API_URL}/api/docente/disciplinas`, {
                     headers: { "Authorization": `Bearer ${tokenAtual}` }
                 });
                 const data = await res.json();
@@ -444,7 +447,7 @@
 
             const msgDiv = document.getElementById("docente-msg");
             try {
-                const res = await fetch("/api/docente/publicar-nota", {
+                const res = await fetch(`${API_URL}/api/docente/publicar-nota`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -465,7 +468,7 @@
 
         // --- LÓGICA DO ESTUDANTE ---
         async function carregarGradeEstudante() {
-            const res = await fetch("/api/estudante/grade-notas", {
+            const res = await fetch(`${API_URL}/api/estudante/grade-notas`, {
                 headers: { "Authorization": `Bearer ${tokenAtual}` }
             });
             const data = await res.json();
@@ -498,7 +501,7 @@
 
         // --- LÓGICA DO ADMIN ---
         async function carregarCursosAdmin() {
-            const res = await fetch("/api/cursos");
+            const res = await fetch(`${API_URL}/api/cursos`);
             const cursos = await res.json();
             const select = document.getElementById("adm-curso");
             select.innerHTML = "";
@@ -517,7 +520,7 @@
                 curso_id: parseInt(document.getElementById("adm-curso").value)
             };
 
-            const res = await fetch("/api/admin/cadastrar-usuario", {
+            const res = await fetch(`${API_URL}/api/admin/cadastrar-usuario`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
