@@ -70,7 +70,6 @@
             
             <!-- ADMIN PAINEL -->
             <div id="aba-admin" class="hidden space-y-6">
-                <!-- MÉTRICAS GLOBAIS -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
                         <div>
@@ -102,7 +101,6 @@
                     </div>
                 </div>
 
-                <!-- CADASTRAR USUÁRIO -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                     <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Cadastrar Novo Utilizador</h3>
                     <form id="form-cadastro" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -122,7 +120,6 @@
                     <div id="cad-msg" class="mt-3 text-sm font-semibold"></div>
                 </div>
 
-                <!-- ALOCAÇÃO DE DISCIPLINAS A PROFESSORES -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                     <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Atribuição de Cadeira a Docente</h3>
                     <form id="form-alocacao" class="grid grid-cols-1 md:grid-cols-3 gap-4" onsubmit="atribuirDisciplina(event)">
@@ -137,7 +134,6 @@
                     <div id="aloc-msg" class="mt-2 text-xs font-semibold text-green-600 hidden">Atribuição efetuada com sucesso!</div>
                 </div>
 
-                <!-- GESTÃO DE UTILIZADORES -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                     <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Gestão de Utilizadores Registados</h3>
                     <div class="overflow-x-auto">
@@ -160,7 +156,6 @@
 
             <!-- DOCENTE PAINEL -->
             <div id="aba-docente" class="hidden space-y-6">
-                <!-- LANÇAMENTO DE NOTAS -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                     <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Lançamento de Avaliações</h3>
                     <form id="form-docente-nota" class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -196,7 +191,6 @@
                     <div id="doc-msg" class="mt-3 text-sm font-semibold"></div>
                 </div>
 
-                <!-- CONTROLO DE PRESENÇAS -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                     <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Controlo de Assiduidade (Chamada Digital)</h3>
                     <form onsubmit="registarPresenca(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -211,7 +205,6 @@
                     </form>
                 </div>
 
-                <!-- MATERIAL DIDÁTICO / SUMÁRIOS -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                     <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Publicar Apontamentos / Material de Apoio</h3>
                     <form onsubmit="publicarMaterial(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -229,7 +222,6 @@
                 </div>
 
                 <div id="grade-licenciatura" class="space-y-6 hidden">
-                    <!-- CABEÇALHO DO CURSO E AÇÕES -->
                     <div class="bg-blue-900 text-white p-5 rounded-lg shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
                         <div>
                             <span class="text-xs uppercase font-semibold text-blue-200">Curso Inscrito</span>
@@ -241,42 +233,44 @@
                         </div>
                     </div>
 
-                    <!-- TABELAS DE NOTAS -->
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                        <h3 class="text-lg font-bold mb-4 text-blue-900 border-b pb-2">1º Semestre</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse border border-gray-200">
-                                <thead>
-                                    <tr class="bg-gray-100 text-xs text-gray-600 border-b">
-                                        <th class="p-3 border">Disciplina</th>
-                                        <th class="p-3 border">Teste</th>
-                                        <th class="p-3 border">Trabalho</th>
-                                        <th class="p-3 border">Exame</th>
-                                        <th class="p-3 border">Média Final</th>
-                                        <th class="p-3 border text-center">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabela-semestre-1" class="text-sm"></tbody>
-                            </table>
+                    <!-- CONTAINER DINÂMICO DE TABELAS DE NOTAS / AVISO FINANCEIRO -->
+                    <div id="container-tabelas-notas" class="space-y-6">
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <h3 class="text-lg font-bold mb-4 text-blue-900 border-b pb-2">1º Semestre</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse border border-gray-200">
+                                    <thead>
+                                        <tr class="bg-gray-100 text-xs text-gray-600 border-b">
+                                            <th class="p-3 border">Disciplina</th>
+                                            <th class="p-3 border">Teste</th>
+                                            <th class="p-3 border">Trabalho</th>
+                                            <th class="p-3 border">Exame</th>
+                                            <th class="p-3 border">Média Final</th>
+                                            <th class="p-3 border text-center">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabela-semestre-1" class="text-sm"></tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                        <h3 class="text-lg font-bold mb-4 text-blue-900 border-b pb-2">2º Semestre</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse border border-gray-200">
-                                <thead>
-                                    <tr class="bg-gray-100 text-xs text-gray-600 border-b">
-                                        <th class="p-3 border">Disciplina</th>
-                                        <th class="p-3 border">Teste</th>
-                                        <th class="p-3 border">Trabalho</th>
-                                        <th class="p-3 border">Exame</th>
-                                        <th class="p-3 border">Média Final</th>
-                                        <th class="p-3 border text-center">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabela-semestre-2" class="text-sm"></tbody>
-                            </table>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <h3 class="text-lg font-bold mb-4 text-blue-900 border-b pb-2">2º Semestre</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse border border-gray-200">
+                                    <thead>
+                                        <tr class="bg-gray-100 text-xs text-gray-600 border-b">
+                                            <th class="p-3 border">Disciplina</th>
+                                            <th class="p-3 border">Teste</th>
+                                            <th class="p-3 border">Trabalho</th>
+                                            <th class="p-3 border">Exame</th>
+                                            <th class="p-3 border">Média Final</th>
+                                            <th class="p-3 border text-center">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabela-semestre-2" class="text-sm"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
@@ -294,7 +288,7 @@
                                         <th class="p-3 border text-center">Ação</th>
                                     </tr>
                                 </thead>
-                                <tbody class="text-sm">
+                                <tbody>
                                     <tr class="border-b">
                                         <td class="p-3 border font-medium">Fevereiro</td>
                                         <td class="p-3 border">5.500 MT</td>
@@ -306,8 +300,8 @@
                                         <td class="p-3 border font-medium">Março</td>
                                         <td class="p-3 border">5.500 MT</td>
                                         <td class="p-3 border">10/03/2026</td>
-                                        <td class="p-3 border"><span class="px-2 py-1 text-xs font-bold rounded bg-yellow-100 text-yellow-800">Pendente</span></td>
-                                        <td class="p-3 border text-center"><button onclick="alert('Referência M-Pesa / BCI: 849021983')" class="bg-blue-600 text-white px-2 py-1 text-xs rounded hover:bg-blue-700">Pagar Guia</button></td>
+                                        <td class="p-3 border"><span class="px-2 py-1 text-xs font-bold rounded bg-red-100 text-red-800">Atrasado</span></td>
+                                        <td class="p-3 border text-center"><button onclick="alert('Referência M-Pesa / BCI: 849021983')" class="bg-blue-600 text-white px-2 py-1 text-xs rounded hover:bg-blue-700 font-semibold">Pagar Guia</button></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -353,25 +347,14 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE LÓGICA DA APLICAÇÃO -->
+    <!-- SCRIPT DA APLICAÇÃO -->
     <script>
         const API_URL = "https://siga-iris-backend.onrender.com";
 
-        // LISTA DE FOTOS PARA O BACKGROUND DA TELA DE LOGIN
         const imagensBackground = [
-            "logo.png",
-            "logo1.png",
-            "logo2.png",
-            "logo3.png",
-            "logo4.png",
-            "logo5.png",
-            "logo6.png",
-            "logo7.png",
-            "logo8.png",
-            "logo9.png",
-            "logo10.png",
-            "logo11.png",
-            "logo12.png"
+            "logo.png", "logo1.png", "logo2.png", "logo3.png", "logo4.png", 
+            "logo5.png", "logo6.png", "logo7.png", "logo8.png", "logo9.png", 
+            "logo10.png", "logo11.png", "logo12.png"
         ];
 
         let indiceFundoAtual = 0;
@@ -399,7 +382,6 @@
         trocarFundo();
         setInterval(trocarFundo, 5000);
 
-        // GARANTIA DO LOGO DA UNIVERSIDADE
         const imgLogoOficial = document.getElementById("img-logo-oficial");
         const imgLogoHeader = document.getElementById("img-logo-header");
         if (imgLogoOficial && imgLogoHeader) {
@@ -648,14 +630,70 @@
             });
             const data = await res.json();
 
-            if (data.tipo === "Mestrado") {
-                document.getElementById("aviso-mestrado").classList.remove("hidden");
-                document.getElementById("grade-licenciatura").classList.add("hidden");
-            } else {
-                document.getElementById("aviso-mestrado").classList.add("hidden");
-                document.getElementById("grade-licenciatura").classList.remove("hidden");
-                document.getElementById("nome-curso-estudante").innerText = data.curso;
+            const avisoMestrado = document.getElementById("aviso-mestrado");
+            const gradeLicenciatura = document.getElementById("grade-licenciatura");
 
+            if (data.tipo === "Mestrado") {
+                avisoMestrado.classList.remove("hidden");
+                gradeLicenciatura.classList.add("hidden");
+                return;
+            }
+
+            avisoMestrado.classList.add("hidden");
+            gradeLicenciatura.classList.remove("hidden");
+            document.getElementById("nome-curso-estudante").innerText = data.curso;
+
+            const containerNotas = document.getElementById("container-tabelas-notas");
+
+            // SE HOUVER BLOQUEIO FINANCEIRO
+            if (data.bloqueado_financeiro) {
+                containerNotas.innerHTML = `
+                    <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-6 rounded-lg text-center shadow-sm">
+                        <div class="text-4xl mb-2">🔒</div>
+                        <h3 class="text-lg font-bold">Acesso às Notas Bloqueado</h3>
+                        <p class="text-sm mt-1 text-red-600">${data.mensagem}</p>
+                    </div>
+                `;
+            } else {
+                // RESTAURA AS TABELAS CASO O ALUNO ESTEJA REGULARIZADO
+                containerNotas.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold mb-4 text-blue-900 border-b pb-2">1º Semestre</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse border border-gray-200">
+                                <thead>
+                                    <tr class="bg-gray-100 text-xs text-gray-600 border-b">
+                                        <th class="p-3 border">Disciplina</th>
+                                        <th class="p-3 border">Teste</th>
+                                        <th class="p-3 border">Trabalho</th>
+                                        <th class="p-3 border">Exame</th>
+                                        <th class="p-3 border">Média Final</th>
+                                        <th class="p-3 border text-center">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-semestre-1" class="text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold mb-4 text-blue-900 border-b pb-2">2º Semestre</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse border border-gray-200">
+                                <thead>
+                                    <tr class="bg-gray-100 text-xs text-gray-600 border-b">
+                                        <th class="p-3 border">Disciplina</th>
+                                        <th class="p-3 border">Teste</th>
+                                        <th class="p-3 border">Trabalho</th>
+                                        <th class="p-3 border">Exame</th>
+                                        <th class="p-3 border">Média Final</th>
+                                        <th class="p-3 border text-center">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-semestre-2" class="text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
                 renderizarTabela(data.grade[1], "tabela-semestre-1");
                 renderizarTabela(data.grade[2], "tabela-semestre-2");
             }
@@ -663,6 +701,8 @@
 
         function renderizarTabela(lista, elementId) {
             const tbody = document.getElementById(elementId);
+            if (!tbody || !lista) return;
+
             tbody.innerHTML = lista.map(item => {
                 let badgeEstado = '<span class="px-2 py-1 text-xs font-semibold rounded bg-gray-100 text-gray-500">Pendente</span>';
                 if (item.media !== '-') {
