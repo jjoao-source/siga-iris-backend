@@ -26,7 +26,8 @@
         <div class="bg-white/95 backdrop-blur-md p-8 rounded-xl shadow-2xl w-full max-w-md border border-white/20 flex flex-col items-center">
             
             <div class="mb-4 flex items-center justify-center">
-                <img src="https://siga-iris-backend.onrender.com/static/logo_universidade.png" 
+                <img id="img-logo-oficial" 
+                     src="./static/logo_universidade.png" 
                      alt="Universidade Íris" 
                      class="h-24 w-auto object-contain">
             </div>
@@ -53,7 +54,8 @@
     <div id="painel-principal" class="hidden flex-1 flex flex-col bg-gray-100">
         <header class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
             <div class="flex items-center space-x-3">
-                <img src="https://siga-iris-backend.onrender.com/static/logo_universidade.png" 
+                <img id="img-logo-header" 
+                     src="./static/logo_universidade.png" 
                      alt="Logo" 
                      class="h-9 w-auto object-contain bg-white rounded-full p-1">
                 <div>
@@ -354,7 +356,7 @@
     <script>
         const API_URL = "https://siga-iris-backend.onrender.com";
 
-        // LISTA DE FOTOS EXCLUSIVAS PARA O BACKGROUND DA TELA DE LOGIN
+        // LISTA DE FOTOS PARA O BACKGROUND DA TELA DE LOGIN
         const imagensBackground = [
             "logo.png",
             "logo1.png",
@@ -377,15 +379,31 @@
             const containerLogin = document.getElementById("tela-login");
             if (!containerLogin) return;
 
-            const imagemUrl = `${API_URL}/static/${imagensBackground[indiceFundoAtual]}`;
-            containerLogin.style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('${imagemUrl}')`;
+            const nomeImagem = imagensBackground[indiceFundoAtual];
+            
+            // Tenta carregar a imagem localmente; caso falhe, recorre ao Render
+            const imgLocal = `./static/${nomeImagem}`;
+            const imgRemota = `${API_URL}/static/${nomeImagem}`;
 
-            const proximoIndice = (indiceFundoAtual + 1) % imagensBackground.length;
-            const imgPrecarregar = new Image();
-            imgPrecarregar.src = `${API_URL}/static/${imagensBackground[proximoIndice]}`;
+            const testImg = new Image();
+            testImg.onload = function() {
+                containerLogin.style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('${imgLocal}')`;
+            };
+            testImg.onerror = function() {
+                containerLogin.style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('${imgRemota}')`;
+            };
+            testImg.src = imgLocal;
 
-            indiceFundoAtual = proximoIndice;
+            indiceFundoAtual = (indiceFundoAtual + 1) % imagensBackground.length;
         }
+
+        const logoLocal = "./static/logo_universidade.png";
+        const testLogo = new Image();
+        testLogo.onload = function() {
+            document.getElementById("img-logo-oficial").src = logoLocal;
+            document.getElementById("img-logo-header").src = logoLocal;
+        };
+        testLogo.src = logoLocal;
 
         trocarFundo();
         setInterval(trocarFundo, 5000);
