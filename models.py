@@ -36,9 +36,19 @@ class Nota(Base):
     estudante_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
     semestre = Column(Integer, nullable=False)
     disciplina = Column(String, nullable=False)
-    teste = Column(Float, default=0.0)
+    
+    # Avaliações Contínuas
+    teste1 = Column(Float, default=0.0)
+    teste2 = Column(Float, default=0.0)
     trabalho = Column(Float, default=0.0)
-    exame = Column(Float, default=0.0)
-    media = Column(Float, default=0.0)
+    media_frequencia = Column(Float, default=0.0)
+    
+    # Exames
+    exame = Column(Float, nullable=True)
+    recorrencia = Column(Float, nullable=True)
+    
+    # Média e Estado Final
+    media_final = Column(Float, default=0.0)
+    estado = Column(String, default="Pendente") # Excluído, Admitido, Aprovado, Recorrência, Reprovado
 
     estudante = relationship("Usuario", back_populates="notas")
