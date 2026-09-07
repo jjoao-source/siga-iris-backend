@@ -1,26 +1,27 @@
-import hashlib
 import os
-from datetime import datetime, timedelta
-from typing import List, Optional
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from typing import List, Optional
+from datetime import datetime, timedelta
 from jose import JWTError, jwt
+from sqlalchemy.orm import Session
 
-SECRET_KEY = "chave_super_secreta_universidade_ia"
+import models
+from database import engine, get_db
+
+# Cria as tabelas na base de dados PostgreSQL automaticamente se não existirem
+models.Base.metadata.create_all(bind=engine)
+
+# CONFIGURAÇÕES DE SEGURANÇA
+SECRET_KEY = "sua_chave_secreta_super_segura_aqui"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+app = FastAPI(title="SIGA-Íris API")
 
-app = FastAPI(title="API Sistema Universitario")
-
-if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
-
+# CONFIGURAÇÃO DE CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,223 +30,67 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def gerar_hash_senha(senha: str) -> str:
-    salt = b"universidade_salt_fixo_2026"
-    return hashlib.pbkdf2_hmac('sha256', senha.encode('utf-8'), salt, 100000).hex()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-def verificar_senha(senha_digitada: str, hash_armazenado: str) -> bool:
-    return gerar_hash_senha(senha_digitada) == hash_armazenado
-
-HASH_PADRAO = gerar_hash_senha("123456")
-
-CURSOS_DB = [
-    {"id": 1, "nome": "Engenharia Informática", "tipo": "Licenciatura"},
-    {"id": 2, "nome": "Gestão de Empresas", "tipo": "Licenciatura"},
-    {"id": 3, "nome": "Direito", "tipo": "Licenciatura"},
-    {"id": 4, "nome": "Medicina", "tipo": "Licenciatura"},
-    {"id": 5, "nome": "Arquitetura", "tipo": "Licenciatura"},
-    {"id": 6, "nome": "Psicologia", "tipo": "Licenciatura"},
-    {"id": 7, "nome": "Economia", "tipo": "Licenciatura"},
-    {"id": 8, "nome": "Mestrado em Inteligência Artificial", "tipo": "Mestrado"},
-    {"id": 9, "nome": "Mestrado em Gestão de Projetos", "tipo": "Mestrado"},
-    {"id": 10, "nome": "Mestrado em Direito Empresarial", "tipo": "Mestrado"}
-]
-
-DISCIPLINAS_LICENCIATURA = {
-    1: ["Introdução à Programação", "Álgebra Linear", "Cálculo I", "Arquitetura de Computadores", "Sistemas Operativos", "Física Geral"],
-    2: ["Algoritmos e Estruturas de Dados", "Bancos de Dados", "Cálculo II", "Redes de Computadores", "Engenharia de Software", "Estatística e Probabilidades"]
-}
-
-# ADICIONADO: Campo "propina_em_dia" para controlar o bloqueio financeiro individual
-USUARIOS_DB = {
-    "admin@univ.br": {
-        "id": "ADM01", "nome": "Diretoria Acadêmica", "email": "admin@univ.br",
-        "senha_hash": HASH_PADRAO, "perfil": "admin", "curso_id": None, "propina_em_dia": True
-    },
-    "professor@univ.br": {
-        "id": "DOC01", "nome": "Prof. Carlos Silva", "email": "professor@univ.br",
-        "senha_hash": HASH_PADRAO, "perfil": "docente", "curso_id": 1, "propina_em_dia": True
-    },
-    "aluno@univ.br": {
-        "id": "EST01", "nome": "Ana Maria", "email": "aluno@univ.br",
-        "senha_hash": HASH_PADRAO, "perfil": "estudante", "curso_id": 1, "propina_em_dia": False  # Altere para True para liberar as notas
-    }
-}
-
-NOTAS_DB = [
-    {"estudante_id": "EST01", "semestre": 1, "disciplina": "Introdução à Programação", "teste": 8.5, "trabalho": 9.0, "exame": 8.0},
-    {"estudante_id": "EST01", "semestre": 1, "disciplina": "Álgebra Linear", "teste": 7.0, "trabalho": 7.5, "exame": 8.0},
-    {"estudante_id": "EST01", "semestre": 2, "disciplina": "Bancos de Dados", "teste": 9.0, "trabalho": 8.5, "exame": 9.5}
-]
-
-def criar_token_acesso(data: dict):
-    to_encode = data.copy()
-    expiracao = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expiracao})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-def obter_usuario_atual(token: str = Depends(oauth2_scheme)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None or email not in USUARIOS_DB:
-            raise HTTPException(status_code=401, detail="Token inválido")
-        return USUARIOS_DB[email]
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Sessão expirada ou inválida")
-
-@app.get("/")
-def home():
-    if os.path.exists("index.html"):
-        return FileResponse("index.html")
-    return {"mensagem": "Arquivo index.html não encontrado."}
-
-@app.post("/api/auth/login")
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    usuario = USUARIOS_DB.get(form_data.username)
-    if not usuario or not verificar_senha(form_data.password, usuario["senha_hash"]):
-        raise HTTPException(status_code=400, detail="E-mail ou senha incorretos")
+# ---------------------------------------------------------
+# POVOAMENTO INICIAL DO BANCO DE DADOS (SEED)
+# ---------------------------------------------------------
+@app.on_event("startup")
+def startup_db_seed():
+    db = next(get_db())
     
-    token = criar_token_acesso(data={"sub": usuario["email"], "perfil": usuario["perfil"]})
-    return {
-        "access_token": token, 
-        "token_type": "bearer",
-        "perfil": usuario["perfil"], 
-        "nome": usuario["nome"],
-        "id": usuario["id"], 
-        "curso_id": usuario["curso_id"]
-    }
+    # 1. Inserir Cursos Iniciais
+    if db.query(models.Curso).count() == 0:
+        cursos_iniciais = [
+            models.Curso(id=1, nome="Engenharia Informática", tipo="Licenciatura"),
+            models.Curso(id=2, nome="Administração de Empresas", tipo="Licenciatura"),
+            models.Curso(id=3, nome="Medicina Geral", tipo="Mestrado Integral")
+        ]
+        db.add_all(cursos_iniciais)
+        db.commit()
 
-@app.get("/api/cursos")
-def listar_cursos():
-    return CURSOS_DB
+    # 2. Inserir Utilizadores Iniciais
+    if db.query(models.Usuario).count() == 0:
+        admin = models.Usuario(
+            nome="Administrador do Sistema",
+            email="admin@univ.br",
+            senha="123",
+            perfil="admin"
+        )
+        docente = models.Usuario(
+            nome="Prof. Doutor Carlos",
+            email="docente@univ.br",
+            senha="123",
+            perfil="docente",
+            curso_id=1
+        )
+        estudante = models.Usuario(
+            estudante_id="EST01",
+            nome="João Silva",
+            email="estudante@univ.br",
+            senha="123",
+            perfil="estudante",
+            curso_id=1,
+            bloqueado_financeiro=False
+        )
+        db.add_all([admin, docente, estudante])
+        db.commit()
+        db.refresh(estudante)
 
-class NovoUsuario(BaseModel):
-    nome: str
-    email: str
-    senha: str
-    perfil: str
-    curso_id: int
+        # Inserir Notas Iniciais para o estudante de teste
+        notas_iniciais = [
+            models.Nota(estudante_id=estudante.id, semestre=1, disciplina="Programação I", teste=14.0, trabalho=16.0, exame=15.0, media=15.0),
+            models.Nota(estudante_id=estudante.id, semestre=1, disciplina="Matemática Discreta", teste=12.0, trabalho=10.0, exame=11.0, media=11.0),
+            models.Nota(estudante_id=estudante.id, semestre=2, disciplina="Algoritmos e Estruturas de Dados", teste=0.0, trabalho=0.0, exame=0.0, media=0.0),
+            models.Nota(estudante_id=estudante.id, semestre=2, disciplina="Base de Dados", teste=0.0, trabalho=0.0, exame=0.0, media=0.0)
+        ]
+        db.add_all(notas_iniciais)
+        db.commit()
 
-class EditarUsuario(BaseModel):
-    email: str
-    nome: str
-    nova_senha: Optional[str] = None
-
-@app.get("/api/admin/usuarios")
-def listar_usuarios(usuario_atual: dict = Depends(obter_usuario_atual)):
-    if usuario_atual["perfil"] != "admin":
-        raise HTTPException(status_code=403, detail="Acesso restrito.")
-    
-    lista = []
-    totais = {"estudantes": 0, "docentes": 0}
-    
-    for u in USUARIOS_DB.values():
-        if u["perfil"] in ["estudante", "docente"]:
-            curso = next((c["nome"] for c in CURSOS_DB if c["id"] == u["curso_id"]), "Não definido")
-            lista.append({
-                "id": u["id"],
-                "nome": u["nome"],
-                "email": u["email"],
-                "perfil": u["perfil"],
-                "curso": curso
-            })
-            if u["perfil"] == "estudante":
-                totais["estudantes"] += 1
-            else:
-                totais["docentes"] += 1
-
-    return {"totais": totais, "usuarios": lista}
-
-@app.post("/api/admin/cadastrar-usuario")
-def cadastrar_usuario(dados: NovoUsuario, usuario_atual: dict = Depends(obter_usuario_atual)):
-    if usuario_atual["perfil"] != "admin":
-        raise HTTPException(status_code=403, detail="Acesso restrito.")
-    
-    if dados.email in USUARIOS_DB:
-        raise HTTPException(status_code=400, detail="E-mail já cadastrado.")
-
-    novo_id = f"{'DOC' if dados.perfil == 'docente' else 'EST'}{len(USUARIOS_DB) + 1:02d}"
-    
-    USUARIOS_DB[dados.email] = {
-        "id": novo_id,
-        "nome": dados.nome,
-        "email": dados.email,
-        "senha_hash": gerar_hash_senha(dados.senha),
-        "perfil": dados.perfil,
-        "curso_id": dados.curso_id,
-        "propina_em_dia": True
-    }
-    return {"mensagem": "Usuário cadastrado com sucesso!"}
-
-@app.put("/api/admin/editar-usuario")
-def editar_usuario(dados: EditarUsuario, usuario_atual: dict = Depends(obter_usuario_atual)):
-    if usuario_atual["perfil"] != "admin":
-        raise HTTPException(status_code=403, detail="Acesso restrito.")
-    
-    if dados.email not in USUARIOS_DB:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
-
-    USUARIOS_DB[dados.email]["nome"] = dados.nome
-    if dados.nova_senha and dados.nova_senha.strip():
-        USUARIOS_DB[dados.email]["senha_hash"] = gerar_hash_senha(dados.nova_senha)
-
-    return {"mensagem": "Dados do usuário atualizados com sucesso!"}
-
-@app.delete("/api/admin/deletar-usuario/{email}")
-def deletar_usuario(email: str, usuario_atual: dict = Depends(obter_usuario_atual)):
-    if usuario_atual["perfil"] != "admin":
-        raise HTTPException(status_code=403, detail="Acesso restrito.")
-    
-    if email not in USUARIOS_DB:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
-
-    del USUARIOS_DB[email]
-    return {"mensagem": "Usuário removido com sucesso!"}
-
-# ROTA ATUALIZADA COM VERIFICAÇÃO DE BLOQUEIO FINANCEIRO
-@app.get("/api/estudante/grade-notas")
-def obter_grade_notas(usuario_atual: dict = Depends(obter_usuario_atual)):
-    if usuario_atual["perfil"] != "estudante":
-        raise HTTPException(status_code=403, detail="Acesso exclusivo para estudantes.")
-    
-    curso = next((c for c in CURSOS_DB if c["id"] == usuario_atual["curso_id"]), None)
-    
-    if not curso or curso["tipo"] == "Mestrado":
-        return {"tipo": "Mestrado", "mensagem": "Disponíveis brevemente"}
-
-    # VERIFICAÇÃO DE PROPINAS EM ATRASO
-    if not usuario_atual.get("propina_em_dia", True):
-        return {
-            "tipo": "Licenciatura",
-            "curso": curso["nome"],
-            "bloqueado_financeiro": True,
-            "mensagem": "Notas temporariamente bloqueadas devido a pendências no pagamento de propinas. Por favor, regularize a sua situação na secretaria.",
-            "grade": {1: [], 2: []}
-        }
-
-    estudante_id = usuario_atual["id"]
-    grade = {1: [], 2: []}
-
-    for sem in [1, 2]:
-        for disc in DISCIPLINAS_LICENCIATURA[sem]:
-            nota = next((n for n in NOTAS_DB if n["estudante_id"] == estudante_id and n["disciplina"] == disc), None)
-            grade[sem].append({
-                "disciplina": disc,
-                "teste": nota["teste"] if nota else "-",
-                "trabalho": nota["trabalho"] if nota else "-",
-                "exame": nota["exame"] if nota else "-",
-                "media": round((nota["teste"] + nota["trabalho"] + nota["exame"]) / 3, 1) if nota else "-"
-            })
-
-    return {
-        "tipo": "Licenciatura", 
-        "curso": curso["nome"], 
-        "bloqueado_financeiro": False,
-        "grade": grade
-    }
-
-class PublicarNota(BaseModel):
+# ---------------------------------------------------------
+# MODELOS PYDANTIC
+# ---------------------------------------------------------
+class PublicarNotaSchema(BaseModel):
     estudante_id: str
     semestre: int
     disciplina: str
@@ -253,14 +98,169 @@ class PublicarNota(BaseModel):
     trabalho: float
     exame: float
 
-@app.post("/api/docente/publicar-nota")
-def publicar_nota(dados: PublicarNota, usuario_atual: dict = Depends(obter_usuario_atual)):
-    if usuario_atual["perfil"] != "docente":
-        raise HTTPException(status_code=403, detail="Apenas docentes podem publicar notas.")
-    
-    existente = next((n for n in NOTAS_DB if n["estudante_id"] == dados.estudante_id and n["disciplina"] == dados.disciplina), None)
-    if existente:
-        raise HTTPException(status_code=403, detail="Nota já publicada. Requer autorização do Administrador para alterar.")
+class NovoUsuarioSchema(BaseModel):
+    nome: str
+    email: str
+    senha: str
+    perfil: str
+    curso_id: Optional[int] = None
 
-    NOTAS_DB.append(dados.dict())
-    return {"mensagem": "Nota publicada com sucesso!"}
+# ---------------------------------------------------------
+# FUNÇÕES AUXILIARES DE TOKEN E AUTENTICAÇÃO
+# ---------------------------------------------------------
+def criar_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def obter_usuario_atual(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Token inválido.")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token expirado ou inválido.")
+
+    usuario = db.query(models.Usuario).filter(models.Usuario.email == email).first()
+    if usuario is None:
+        raise HTTPException(status_code=401, detail="Utilizador não encontrado.")
+    return usuario
+
+# ---------------------------------------------------------
+# ROTAS DA API
+# ---------------------------------------------------------
+@app.get("/")
+def root():
+    return {"status": "API SIGA-Íris com PostgreSQL activa e funcional!"}
+
+@app.post("/api/auth/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    usuario = db.query(models.Usuario).filter(models.Usuario.email == form_data.username).first()
+    if not usuario or usuario.senha != form_data.password:
+        raise HTTPException(status_code=400, detail="Credenciais de acesso incorretas.")
+    
+    token = criar_token({"sub": usuario.email, "perfil": usuario.perfil})
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "perfil": usuario.perfil,
+        "nome": usuario.nome
+    }
+
+@app.get("/api/cursos")
+def listar_cursos(db: Session = Depends(get_db)):
+    return db.query(models.Curso).all()
+
+@app.get("/api/docente/disciplinas")
+def obter_disciplinas_docente(user: models.Usuario = Depends(obter_usuario_atual)):
+    if user.perfil != "docente":
+        raise HTTPException(status_code=403, detail="Acesso exclusivo para docentes.")
+    
+    # Disciplinas padrão associadas ao docente
+    disciplinas = {
+        "1": ["Programação I", "Matemática Discreta"],
+        "2": ["Algoritmos e Estruturas de Dados", "Base de Dados"]
+    }
+    return {"disciplinas": disciplinas}
+
+@app.post("/api/docente/publicar-nota")
+def publicar_nota(payload: PublicarNotaSchema, user: models.Usuario = Depends(obter_usuario_atual), db: Session = Depends(get_db)):
+    if user.perfil != "docente":
+        raise HTTPException(status_code=403, detail="Acesso exclusivo para docentes.")
+    
+    estudante = db.query(models.Usuario).filter(
+        models.Usuario.estudante_id == payload.estudante_id,
+        models.Usuario.perfil == "estudante"
+    ).first()
+
+    if not estudante:
+        raise HTTPException(status_code=404, detail="Estudante não encontrado com esse ID.")
+
+    media = round((payload.teste + payload.trabalho + payload.exame) / 3, 1)
+
+    # Procura se a nota da disciplina já existe na base de dados
+    nota_existente = db.query(models.Nota).filter(
+        models.Nota.estudante_id == estudante.id,
+        models.Nota.semestre == payload.semestre,
+        models.Nota.disciplina == payload.disciplina
+    ).first()
+
+    if nota_existente:
+        nota_existente.teste = payload.teste
+        nota_existente.trabalho = payload.trabalho
+        nota_existente.exame = payload.exame
+        nota_existente.media = media
+    else:
+        nova_nota = models.Nota(
+            estudante_id=estudante.id,
+            semestre=payload.semestre,
+            disciplina=payload.disciplina,
+            teste=payload.teste,
+            trabalho=payload.trabalho,
+            exame=payload.exame,
+            media=media
+        )
+        db.add(nova_nota)
+
+    db.commit()
+    return {"mensagem": f"Notas de {payload.disciplina} publicadas com sucesso para {estudante.nome}!"}
+
+@app.get("/api/estudante/grade-notas")
+def obter_grade_estudante(user: models.Usuario = Depends(obter_usuario_atual), db: Session = Depends(get_db)):
+    if user.perfil != "estudante":
+        raise HTTPException(status_code=403, detail="Acesso exclusivo para estudantes.")
+    
+    if user.bloqueado_financeiro:
+        return {
+            "bloqueado_financeiro": True,
+            "mensagem": "Acesso suspenso por pendências financeiras. Dirija-se à secretaria."
+        }
+
+    curso_nome = user.curso.nome if user.curso else "Não Atribuído"
+
+    # Buscar todas as notas registradas no banco para o estudante
+    notas_db = db.query(models.Nota).filter(models.Nota.estudante_id == user.id).all()
+
+    grade = {1: [], 2: []}
+    for n in notas_db:
+        if n.semestre in grade:
+            grade[n.semestre].append({
+                "disciplina": n.disciplina,
+                "teste": n.teste,
+                "trabalho": n.trabalho,
+                "exame": n.exame,
+                "media": n.media
+            })
+
+    return {
+        "bloqueado_financeiro": False,
+        "curso": curso_nome,
+        "grade": grade
+    }
+
+@app.post("/api/admin/cadastrar-usuario")
+def cadastrar_usuario(payload: NovoUsuarioSchema, user: models.Usuario = Depends(obter_usuario_atual), db: Session = Depends(get_db)):
+    if user.perfil != "admin":
+        raise HTTPException(status_code=403, detail="Acesso restrito ao administrador.")
+    
+    if db.query(models.Usuario).filter(models.Usuario.email == payload.email).first():
+        raise HTTPException(status_code=400, detail="E-mail já se encontra registado.")
+
+    total_usuarios = db.query(models.Usuario).count()
+    novo_usuario = models.Usuario(
+        nome=payload.nome,
+        email=payload.email,
+        senha=payload.senha,
+        perfil=payload.perfil,
+        curso_id=payload.curso_id
+    )
+
+    if payload.perfil == "estudante":
+        novo_usuario.estudante_id = f"EST{total_usuarios + 1:02d}"
+        novo_usuario.bloqueado_financeiro = False
+
+    db.add(novo_usuario)
+    db.commit()
+    return {"mensagem": f"Utilizador {payload.nome} cadastrado com sucesso!"}
