@@ -217,7 +217,31 @@ def obter_grade_estudante(user: models.Usuario = Depends(obter_usuario_atual), d
 
     return {"bloqueado_financeiro": False, "curso": curso_nome, "grade": grade}
 
-# ROTAS PARA CADASTRO DE UTILIZADORES (ADMIN)
+# ROTAS PARA LISTAGEM E CADASTRO DE UTILIZADORES (ADMIN)
+@app.get("/api/admin/usuarios")
+@app.get("/api/usuarios")
+def listar_usuarios(user: models.Usuario = Depends(obter_usuario_atual), db: Session = Depends(get_db)):
+    if user.perfil != "admin":
+        raise HTTPException(status_code=403, detail="Acesso restrito ao administrador.")
+    
+    usuarios = db.query(models.Usuario).all()
+    resultado = []
+    
+    for u in usuarios:
+        curso_nome = u.curso.nome if u.curso else "N/A"
+        id_visivel = u.estudante_id if u.perfil == "estudante" else f"DOC{u.id:02d}" if u.perfil == "docente" else f"ADM{u.id:02d}"
+        
+        resultado.append({
+            "id": id_visivel,
+            "nome": u.nome,
+            "email": u.email,
+            "perfil": u.perfil,
+            "curso": curso_nome,
+            "bloqueado_financeiro": u.bloqueado_financeiro
+        })
+        
+    return resultado
+
 @app.post("/api/admin/cadastrar-usuario")
 @app.post("/api/admin/usuarios")
 @app.post("/api/usuarios")
