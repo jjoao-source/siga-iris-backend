@@ -29,7 +29,7 @@ app.add_middleware(
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-# Função auxiliar para calcular estado do estudante
+# Função auxiliar para calcular estado do estudante segundo normas académicas de Moçambique
 def calcular_desempenho(t1: float, t2: float, trab: float, ex: Optional[float] = None, rec: Optional[float] = None):
     mf = round((t1 + t2 + trab) / 3, 1)
     
@@ -216,3 +216,31 @@ def obter_grade_estudante(user: models.Usuario = Depends(obter_usuario_atual), d
             })
 
     return {"bloqueado_financeiro": False, "curso": curso_nome, "grade": grade}
+
+# ROTAS PARA CADASTRO DE UTILIZADORES (ADMIN)
+@app.post("/api/admin/cadastrar-usuario")
+@app.post("/api/admin/usuarios")
+@app.post("/api/usuarios")
+def cadastrar_usuario(payload: NovoUsuarioSchema, user: models.Usuario = Depends(obter_usuario_atual), db: Session = Depends(get_db)):
+    if user.perfil != "admin":
+        raise HTTPException(status_code=403, detail="Acesso restrito ao administrador.")
+    
+    if db.query(models.Usuario).filter(models.Usuario.email == payload.email).first():
+        raise HTTPException(status_code=400, detail="E-mail já se encontra registado.")
+
+    total_usuarios = db.query(models.Usuario).count()
+    novo_usuario = models.Usuario(
+        nome=payload.nome,
+        email=payload.email,
+        senha=payload.senha,
+        perfil=payload.perfil,
+        curso_id=payload.curso_id
+    )
+
+    if payload.perfil == "estudante":
+        novo_usuario.estudante_id = f"EST{total_usuarios + 1:02d}"
+        novo_usuario.bloqueado_financeiro = False
+
+    db.add(novo_usuario)
+    db.commit()
+    return {"mensagem": f"Utilizador {payload.nome} cadastrado com sucesso!"}
